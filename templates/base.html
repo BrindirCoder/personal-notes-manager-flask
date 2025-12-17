@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}App{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Flash styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/flash.css') }}">
+
+    {% block head %}{% endblock %}
+</head>
+<body>
+
+{% set auth_pages = ['login', 'register', 'home'] %}
+
+{% if request.endpoint in auth_pages %}
+<!-- FLOATING FLASH (LOGIN / REGISTER ONLY) -->
+<div class="flash-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, msg in messages %}
+        <div class="flash-message {{ category }}">
+            <span>{{ msg }}</span>
+            <button onclick="this.parentElement.remove()">✕</button>
+        </div>
+        {% endfor %}
+    {% endwith %}
+</div>
+{% endif %}
+
+{% block content %}{% endblock %}
+
+</body>
+</html>

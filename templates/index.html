@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Personal Notes{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <!-- TOP BAR -->
+    <div class="top-bar">
+        <div class="brand">📝 Personal Notes</div>
+
+        <div class="user-area">
+            <div class="user-info">
+                <span class="user-avatar">{{ current_user.username[0]|upper }}</span>
+                <span>{{ current_user.username }}</span>
+            </div>
+            <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+        </div>
+    </div>
+
+    <!-- PAGE FLASH (ADD / EDIT / DELETE) -->
+    <div class="page-flash">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, msg in messages %}
+                {% if category in ['success', 'info', 'delete'] %}
+                <div class="page-flash-card {{ category }}">
+                    <span>{{ msg }}</span>
+                    <button onclick="this.parentElement.remove()">✕</button>
+                </div>
+                {% endif %}
+            {% endfor %}
+        {% endwith %}
+    </div>
+
+    <h1>Your Notes, Organized & Secure</h1>
+
+    <!-- ACTIONS -->
+    <div class="top-actions">
+        <a href="{{ url_for('add_note') }}" class="btn-main">+ Add New Note</a>
+
+        <form method="GET" action="{{ url_for('show_data') }}" class="filter-form">
+            <input
+                class="search-input"
+                name="q"
+                placeholder="Search title..."
+                value="{{ search_query }}"
+            >
+            <select name="category" class="select-input">
+                {% for c in ['All','General','Work','Personal','Other'] %}
+                <option value="{{ c }}" {% if selected_category == c %}selected{% endif %}>
+                    {{ c }}
+                </option>
+                {% endfor %}
+            </select>
+            <button class="btn-main">Search</button>
+        </form>
+    </div>
+
+    <!-- NOTES GRID -->
+    <div class="notes-grid">
+        {% for note in notes %}
+        <div class="note-card">
+            <div>
+                <div class="note-title">{{ note.title }}</div>
+                <div class="note-category">{{ note.category }}</div>
+
+                <div class="note-meta">
+                    <span>🟢 {{ note.created_at.strftime('%d %b %Y %H:%M') }}</span>
+                    <span>
+                        {% if note.updated_at.replace(microsecond=0) == note.created_at.replace(microsecond=0) %}
+                            Not updated
+                        {% else %}
+                            🔵 {{ note.updated_at.strftime('%d %b %Y %H:%M') }}
+                        {% endif %}
+                    </span>
+                </div>
+
+                <div class="note-content">
+                    {{ note.content[:120] }}
+                    {% if note.content|length > 120 %}...{% endif %}
+                </div>
+            </div>
+
+            <!-- ACTION BUTTONS -->
+            <div class="note-actions">
+                <a href="{{ url_for('edit_note', id=note.id) }}" class="edit-btn">
+                    Edit
+                </a>
+
+                <!-- ✅ CSRF FIXED DELETE FORM -->
+                <form
+                    method="POST"
+                    action="{{ url_for('delete_note', id=note.id) }}"
+                    onsubmit="return confirm('Delete this note?');"
+                >
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="delete-btn">Delete</button>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <p class="empty-text">No notes found.</p>
+        {% endfor %}
+    </div>
+
+</div>
+
+{% endblock %}

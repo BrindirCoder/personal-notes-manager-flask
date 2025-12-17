@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Edit Note{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static',filename='css/edit_note.css')}}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <a href="{{ url_for('show_data') }}" class="home-button">Home</a>
+    <h1>Edit Note</h1>
+
+    <form method="POST" class="note-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label>Title</label>
+        <input type="text" name="title" value="{{ note.title }}" required>
+
+        <label>Content</label>
+        <textarea name="content" rows="6">{{ note.content }}</textarea>
+
+        <div class="note-meta">
+            <span>🟢 Created: {{ note.created_at.strftime('%d %b %Y %H:%M') }}</span>
+            <span>🔵 Updated: 
+                {% if note.updated_at.replace(microsecond=0) == note.created_at.replace(microsecond=0) %}
+                    Not updated yet
+                {% else %}
+                    {{ note.updated_at.strftime('%d %b %Y %H:%M') }}
+                {% endif %}
+            </span>
+        </div>
+
+        <label>Category</label>
+        <select name="category">
+            <option value="General"  {% if note.category == 'General' %}selected{% endif %}>General</option>
+            <option value="Work"     {% if note.category == 'Work' %}selected{% endif %}>Work</option>
+            <option value="Personal" {% if note.category == 'Personal' %}selected{% endif %}>Personal</option>
+            <option value="Other"    {% if note.category == 'Other' %}selected{% endif %}>Other</option>
+        </select>
+
+        <button type="submit">Save Changes</button>
+    </form>
+</div>
+{% endblock %}
